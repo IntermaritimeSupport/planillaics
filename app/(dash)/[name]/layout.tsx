@@ -5,26 +5,20 @@ import { SidebarNav } from "@/components/sidebar-nav";
 import { Toaster } from "@/components/ui/toaster";
 import { PayrollProvider } from "@/lib/payroll-context";
 import { UserProvider } from "@/lib/user-context";
-import { Suspense } from "react";
+import { ReactNode, Suspense } from "react";
 import { NoAccessPage } from "@/components/no-access-page";
 import { getLayoutData } from "@/lib/data";
 import Loader from "@/components/loaders/loader";
 
-// --- CAMBIO 1: Acepta 'props' en lugar de desestructurar { children, params }
-export default async function Layout(
-  props: Readonly<{
-    children: React.ReactNode;
-    params: { name: string };
-  }>
-) {
-  const { children, params } = props;
+interface LayoutProps {
+  children: ReactNode;
+  params: {
+    name: string;
+  };
+}
+export default async function Layout({ children, params }: LayoutProps) {
 
-  const { 
-    initialUser, 
-    initialCompanies, 
-    currentCompanyId, 
-    error 
-  } = await getLayoutData(params?.name);
+  const { initialUser, initialCompanies, currentCompanyId, error } = await getLayoutData(params.name);
 
   if (error === 'no-access' || !initialUser || !initialCompanies) {
     return (
