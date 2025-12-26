@@ -1,5 +1,3 @@
-// app/(dash)/[name]/layout.tsx
-
 import type React from "react";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { Toaster } from "@/components/ui/toaster";
@@ -35,7 +33,7 @@ export default async function Layout({ children, params }: LayoutProps) {
     <>
       <Suspense fallback={<div className="h-screen"><Loader/></div>}>
         <PayrollProvider
-          initialUser={{ ...initialUser, activo: initialUser.activo ?? true }}
+          initialUser={{ ...initialUser, activo: initialUser?.activo ?? true }}
           initialCompanies={initialCompanies}
           currentCompanyId={currentCompanyId}
         >
