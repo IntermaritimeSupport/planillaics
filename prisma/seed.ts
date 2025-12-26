@@ -91,6 +91,7 @@ async function main() {
       email: 'david@intermaritime.org',
       rol: 'super_admin',
       activo: true,
+      clerkId: "user_34TpZ0SdkE9Yk22WNWmrKRI1HWT",
       hashedPassword: passwordSuperAdmin,
       companias: {
         connect: [
