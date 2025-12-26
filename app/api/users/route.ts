@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db/db';
 import { auth } from '@clerk/nextjs/server';
+import prisma from '@/lib/prisma';
 
 // GET /api/users?companiaId=...
 // Obtiene todos los usuarios ASIGNADOS a una compañía específica
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Missing companiaId' }, { status: 400 });
     }
 
-    const users = await db.user.findMany({
+    const users = await prisma.user.findMany({
       where: {
         companias: {
           some: {

@@ -1,19 +1,18 @@
 // File: app/api/employees/[id]/route.ts
 
 import { NextResponse } from 'next/server'
-import { Prisma } from '@prisma/client'
 import { EmployeeDeduction } from '@/lib/types'
-import { db } from '@/lib/db/db'
+import prisma from '@/lib/prisma'
 
 // PATCH /api/employees/[id] - Actualizar un empleado
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   try {
     const id = params.id
-    const data = await request.json()
+    const data = await request.json() as Record<string, unknown>
 
-    const updatedData: Prisma.EmployeeUpdateInput = {
+    const updatedData: any = {
       ...data,
-      fechaIngreso: data.fechaIngreso ? new Date(data.fechaIngreso) : undefined,
+      fechaIngreso: data.fechaIngreso ? new Date(data.fechaIngreso as string) : undefined,
       salarioBase: data.salarioBase ? Number(data.salarioBase) : undefined,
       // Manejar el campo JSON
       otrasDeduccionesPersonalizadas: data.otrasDeduccionesPersonalizadas 
@@ -21,7 +20,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         : undefined,
     }
 
-    const updatedEmployee = await db.employee.update({
+    const updatedEmployee = await prisma.employee.update({
       where: { id },
       data: updatedData,
     })
@@ -44,7 +43,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
   try {
     const id = params.id
     
-    await db.employee.delete({
+    await prisma.employee.delete({
       where: { id },
     })
 

@@ -1,6 +1,5 @@
 // File: app/api/legal-parameters/[id]/route.ts
-
-import { db } from '@/lib/db/db'
+import prisma from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 
 // PATCH /api/legal-parameters/[id] - Actualizar un parámetro
@@ -14,7 +13,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         fechaVigencia: data.fechaVigencia ? new Date(data.fechaVigencia) : undefined,
     }
 
-    const updatedParameter = await db.legalParameters.update({
+    const updatedParameter = await prisma.legalParameters.update({
       where: { id: params.id },
       data: updatedData,
     })
@@ -34,7 +33,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 // DELETE /api/legal-parameters/[id] - Eliminar un parámetro
 export async function DELETE(_: Request, { params }: { params: { id: string } }) {
   try {
-    await db.legalParameters.delete({
+    await prisma.legalParameters.delete({
       where: { id: params.id },
     })
 

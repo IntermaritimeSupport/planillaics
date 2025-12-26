@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db/db';
 import { auth } from '@clerk/nextjs/server';
+import prisma from '@/lib/prisma';
 
 // GET /api/users/unassigned?companiaId=...
 export async function GET(request: Request) {
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
     }
 
     // Buscar usuarios que NO están en la lista de esta compañía
-    const users = await db.user.findMany({
+    const users = await prisma.user.findMany({
       where: {
         companias: {
           none: {

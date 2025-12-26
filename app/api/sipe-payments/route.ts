@@ -2,7 +2,7 @@
 
 import { NextResponse } from 'next/server'
 import type { SIPEPayment } from '@/lib/types'
-import { db } from '@/lib/db/db'
+import prisma from '@/lib/prisma'
 
 // GET /api/sipe-payments?companiaId=... - Obtener todos los pagos SIPE
 export async function GET(request: Request) {
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Missing companiaId' }, { status: 400 })
     }
 
-    const payments = await db.sIPEPayment.findMany({
+    const payments = await prisma.sIPEPayment.findMany({
       where: { companiaId },
       orderBy: { periodo: 'desc' },
     })
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
   try {
     const data = (await request.json()) as Omit<SIPEPayment, 'id'>
 
-    const newPayment = await db.sIPEPayment.upsert({
+    const newPayment = await prisma.sIPEPayment.upsert({
         where: { companiaId_periodo: { companiaId: data.companiaId, periodo: data.periodo } },
         update: {
             ...data,

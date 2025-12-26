@@ -2,7 +2,7 @@
 
 import { NextResponse } from 'next/server'
 import type { PayrollEntry } from '@/lib/types'
-import { db } from '@/lib/db/db'
+import prisma from '@/lib/prisma'
 
 // GET /api/payroll-entries?companiaId=...&periodo=... - Obtener entradas de planilla
 export async function GET(request: Request) {
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Missing companiaId or periodo' }, { status: 400 })
     }
 
-    const entries = await db.payrollEntry.findMany({
+    const entries = await prisma.payrollEntry.findMany({
       where: { 
           companiaId,
           periodo: { startsWith: periodo }
@@ -41,8 +41,8 @@ export async function POST(request: Request) {
     }
 
     // Usamos upsert para evitar duplicados si se envía la misma entrada
-    const results = await db.$transaction(
-      entries.map(entry => db.payrollEntry.upsert({
+    const results = await prisma.$transaction(
+      entries.map(entry => prisma.payrollEntry.upsert({
         where: { empleadoId_periodo: { empleadoId: entry.empleadoId, periodo: entry.periodo } },
         update: {
             ...entry,
@@ -73,7 +73,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Missing companiaId or periodo' }, { status: 400 })
     }
 
-    const deleted = await db.payrollEntry.deleteMany({
+    const deleted = await prisma.payrollEntry.deleteMany({
       where: {
           companiaId,
           periodo: { startsWith: periodo }

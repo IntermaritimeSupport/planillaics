@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db/db';
 import { auth } from '@clerk/nextjs/server';
+import prisma from '@/lib/prisma';
 
 // Definir la jerarquía de roles
 const roleHierarchy = {
@@ -23,7 +23,7 @@ export async function PATCH(
     if (!requestingClerkId) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
-    const requestingUser = await db.user.findUnique({
+    const requestingUser = await prisma.user.findUnique({
       where: { clerkId: requestingClerkId },
     });
     if (!requestingUser) {
@@ -52,7 +52,7 @@ export async function PATCH(
         return NextResponse.json({ error: "No puede asignar un rol superior al suyo." }, { status: 403 });
       }
       if (!companiaIdToLink) { 
-        const targetUser = await db.user.findUnique({ where: { id: userIdToUpdate } });
+        const targetUser = await prisma.user.findUnique({ where: { id: userIdToUpdate } });
         if (targetUser) {
           const targetUserCurrentLevel = roleHierarchy[targetUser.rol as Role] || 0;
           if (targetUserCurrentLevel >= requestingUserLevel && requestingUser.rol !== 'super_admin') {
@@ -78,7 +78,7 @@ export async function PATCH(
 
     if (companiaIdToLink) {
       // Lógica para VINCULAR usuario a compañía
-      updatedUser = await db.user.update({
+      updatedUser = await prisma.user.update({
         where: { id: userIdToUpdate },
         data: {
           rol: rol, // Asigna el rol global
@@ -102,7 +102,7 @@ export async function PATCH(
         updateData.clerkId = clerkId === "" ? null : clerkId;
       }
 
-      updatedUser = await db.user.update({
+      updatedUser = await prisma.user.update({
         where: { id: userIdToUpdate },
         data: updateData,
         include: includeCompaniaData // <--- AÑADIDO
@@ -133,7 +133,7 @@ export async function DELETE(
     if (!requestingClerkId) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
-    const requestingUser = await db.user.findUnique({
+    const requestingUser = await prisma.user.findUnique({
       where: { clerkId: requestingClerkId },
     });
     if (!requestingUser) {
@@ -152,7 +152,7 @@ export async function DELETE(
         return NextResponse.json({ error: 'Missing companiaIdToUnlink' }, { status: 400 });
     }
 
-    await db.user.update({
+    await prisma.user.update({
         where: { id: userIdToUnlink },
         data: {
             companias: {

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db/db';
 import { auth } from '@clerk/nextjs/server';
+import prisma from '@/lib/prisma.js';
 
 // POST (Crear Compañía) - Lógica de permisos ya implementada
 export async function POST(request: Request) {
@@ -10,7 +10,7 @@ export async function POST(request: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const user = await db.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { clerkId },
     });
 
@@ -23,14 +23,14 @@ export async function POST(request: Request) {
       return new NextResponse("Forbidden: No tiene permisos para crear compañías", { status: 403 });
     }
 
-    const data = await request.json();
+    const data = await request.json() as any;
     const { nombre, ruc, direccion, telefono, email, representanteLegal } = data;
 
     if (!nombre || !ruc) {
       return NextResponse.json({ error: 'Nombre y RUC son requeridos' }, { status: 400 });
     }
 
-    const newCompany = await db.company.create({
+    const newCompany = await prisma.company.create({
       data: {
         nombre,
         ruc,
@@ -63,7 +63,7 @@ export async function GET(request: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const user = await db.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { clerkId },
       include: { companias: true } // Incluir las compañías asignadas
     });
@@ -75,7 +75,7 @@ export async function GET(request: Request) {
     // --- LÓGICA DE PERMISOS (GET) CORREGIDA ---
     if (user.rol === 'super_admin') {
       // Super Admin: Devolver TODAS las compañías
-      const allCompanies = await db.company.findMany();
+      const allCompanies = await prisma.company.findMany();
       return NextResponse.json(allCompanies);
     } else {
       // Admin, Contador, User: Devolver solo las compañías ASIGNADAS

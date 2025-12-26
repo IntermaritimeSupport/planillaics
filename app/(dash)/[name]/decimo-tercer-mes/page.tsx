@@ -84,7 +84,7 @@ export default function DecimoTercerMesPage() {
   const [selectedEmployeeDetail, setSelectedEmployeeDetail] = useState<CalculatedDecimo | null>(null);
   // Se usa currentYear del contexto para filtrar y en el useEffect
   const entriesForCurrentYear = useMemo(
-    () => decimoEntries.filter((e) => e.anio === currentYear),
+    () => decimoEntries?.filter((e) => e.anio === currentYear),
     [decimoEntries, currentYear]
   );
   const activeEmployees = useMemo(

@@ -1,6 +1,5 @@
+import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
-import { Prisma } from '@prisma/client';
-import { db } from '@/lib/db/db'; 
 
 // Función auxiliar para parsear valores numéricos opcionales (Float?)
 // Retorna number o undefined si es nulo o inválido, para que Prisma use el default o null.
@@ -39,7 +38,7 @@ export async function POST(request: Request) {
 
                 // --- 1. CONSTRUCCIÓN DE DATA ---
                 // Data limpia y tipada, excluyendo 'companiaId' para la creación
-                const baseData: Prisma.EmployeeCreateInput = {
+                const baseData: any = {
                     cedula: String(rowData.cedula),
                     nombre: String(rowData.nombre),
                     apellido: String(rowData.apellido || ''),
@@ -74,7 +73,7 @@ export async function POST(request: Request) {
                 // --- 2. EJECUTAR UPSERT ---
                 
                 // Buscar el registro existente
-                const existingEmployee = await db.employee.findUnique({
+                const existingEmployee = await prisma.employee.findUnique({
                     where: {
                         companiaId_cedula: {
                             companiaId: rowData.companiaId,
@@ -88,7 +87,7 @@ export async function POST(request: Request) {
                 // Ya que `dataToUpsert` contiene el `company: { connect: ... }`,
                 // lo usamos directamente para `create`, y lo limpiamos para `update`.
                 
-                const dataForUpdate: Prisma.EmployeeUpdateInput = { 
+                const dataForUpdate: any = { 
                     ...baseData,
                     // Removemos explícitamente el campo 'company' para evitar conflictos con la sintaxis de update
                     // Nota: Si se permite actualizar la relación, se debe mantener, pero generalmente se remueve
@@ -99,13 +98,13 @@ export async function POST(request: Request) {
 
                 if (existingEmployee) {
                     // Si existe, actualizar (usamos baseData como fuente, pero sin la relación 'company' si fuera UpdateInput)
-                    await db.employee.update({
+                    await prisma.employee.update({
                         where: { id: existingEmployee.id },
-                        data: dataForUpdate as Prisma.EmployeeUpdateInput,
+                        data: dataForUpdate as any,
                     });
                 } else {
                     // Si no existe, crear (usamos baseData que tiene el 'company: { connect }')
-                    await db.employee.create({
+                    await prisma.employee.create({
                         data: baseData,
                     });
                 }
@@ -114,8 +113,8 @@ export async function POST(request: Request) {
 
             } catch (innerError: any) {
                 // Capturar y registrar el error
-                const errorMsg = innerError instanceof Prisma.PrismaClientKnownRequestError 
-                    ? `[Prisma Error ${innerError.code}] ${innerError.message.split('\n').pop()}` 
+                const errorMsg = innerError instanceof Error
+                    ? `${innerError.message.split('\n').pop()}` 
                     : innerError.message || 'Error desconocido al procesar la fila.';
                 
                 failedImports.push(`Fila ${rowNumber}: ${errorMsg}`);

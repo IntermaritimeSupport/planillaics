@@ -1,12 +1,11 @@
 // File: app/api/payroll-entries/[id]/route.ts
-
-import { db } from '@/lib/db/db'
+import prisma from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 
 // DELETE /api/payroll-entries/[id] - Eliminar una entrada
 export async function DELETE(_: Request, { params }: { params: { id: string } }) {
   try {
-    await db.payrollEntry.delete({
+    await prisma.payrollEntry.delete({
       where: { id: params.id },
     })
 

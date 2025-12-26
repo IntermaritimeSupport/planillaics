@@ -18,9 +18,9 @@ interface LayoutProps {
 }
 export default async function Layout({ children, params }: LayoutProps) {
 
-  const { initialUser, initialCompanies, currentCompanyId, error } = await getLayoutData(params.name);
+  const result = await getLayoutData(params.name);
 
-  if (error === 'no-access' || !initialUser || !initialCompanies) {
+  if (result.error === 'no-access' || !result.initialUser || !result.initialCompanies) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <NoAccessPage />
@@ -29,11 +29,13 @@ export default async function Layout({ children, params }: LayoutProps) {
     );
   }
 
+  const { initialUser, initialCompanies, currentCompanyId } = result;
+
   return (
     <>
       <Suspense fallback={<div className="h-screen"><Loader/></div>}>
         <PayrollProvider
-          initialUser={initialUser}
+          initialUser={{ ...initialUser, activo: initialUser.activo ?? true }}
           initialCompanies={initialCompanies}
           currentCompanyId={currentCompanyId}
         >

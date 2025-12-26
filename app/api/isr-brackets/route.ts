@@ -2,7 +2,7 @@
 
 import { NextResponse } from 'next/server'
 import type { ISRBracket } from '@/lib/types'
-import { db } from '@/lib/db/db'
+import prisma from '@/lib/prisma'
 
 // GET /api/isr-brackets?companiaId=... - Obtener todos los tramos
 export async function GET(request: Request) {
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Missing companiaId' }, { status: 400 })
     }
 
-    const brackets = await db.iSRBracket.findMany({
+    const brackets = await prisma.iSRBracket.findMany({
       where: { companiaId },
       orderBy: { desde: 'asc' },
     })
@@ -36,12 +36,12 @@ export async function POST(request: Request) {
     }
 
     // 1. Eliminar todos los tramos anteriores para esta compañía
-    const deleteOperation = db.iSRBracket.deleteMany({
+    const deleteOperation = prisma.iSRBracket.deleteMany({
       where: { companiaId },
     })
 
     // 2. Insertar los nuevos tramos
-    const createOperation = db.iSRBracket.createMany({
+    const createOperation = prisma.iSRBracket.createMany({
       data: brackets.map(b => ({
         ...b,
         companiaId,
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     })
 
     // Ejecutar ambas operaciones en una transacción
-    await db.$transaction([deleteOperation, createOperation])
+    await prisma.$transaction([deleteOperation, createOperation])
 
     return NextResponse.json({ message: 'ISR brackets updated successfully' }, { status: 201 })
   } catch (error) {

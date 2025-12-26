@@ -1,6 +1,5 @@
 // File: app/api/sipe-payments/[id]/route.ts
-
-import { db } from '@/lib/db/db'
+import prisma from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 
 // PATCH /api/sipe-payments/[id] - Actualizar el estado de un pago SIPE
@@ -14,7 +13,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         fechaPago: data.fechaPago ? new Date(data.fechaPago) : undefined,
     }
 
-    const updatedPayment = await db.sIPEPayment.update({
+    const updatedPayment = await prisma.sIPEPayment.update({
       where: { id: params.id },
       data: updatedData,
     })
@@ -36,7 +35,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 // DELETE /api/sipe-payments/[id] - Eliminar un pago SIPE
 export async function DELETE(_: Request, { params }: { params: { id: string } }) {
   try {
-    await db.sIPEPayment.delete({
+    await prisma.sIPEPayment.delete({
       where: { id: params.id },
     })
 

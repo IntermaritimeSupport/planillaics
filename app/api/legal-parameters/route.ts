@@ -2,7 +2,7 @@
 
 import { NextResponse } from 'next/server'
 import type { LegalParameters } from '@/lib/types'
-import { db } from '@/lib/db/db'
+import prisma from '@/lib/prisma'
 
 // GET /api/legal-parameters?companiaId=... - Obtener todos los parámetros
 export async function GET(request: Request) {
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Missing companiaId' }, { status: 400 })
     }
 
-    const parameters = await db.legalParameters.findMany({
+    const parameters = await prisma.legalParameters.findMany({
       where: { companiaId },
       orderBy: { nombre: 'asc' },
     })
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   try {
     const data = (await request.json()) as Omit<LegalParameters, 'id'>
 
-    const newParameter = await db.legalParameters.create({
+    const newParameter = await prisma.legalParameters.create({
       data: {
         ...data,
         porcentaje: Number(data.porcentaje),

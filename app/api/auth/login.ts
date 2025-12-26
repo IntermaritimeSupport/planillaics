@@ -2,9 +2,9 @@ import { encrypt } from '@/lib/session'
 import { serialize } from 'cookie'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const sessionData = req.body
-  const encryptedSessionData = encrypt(sessionData)
+  const encryptedSessionData = await encrypt(sessionData)
  
   const cookie = serialize('session', encryptedSessionData, {
     httpOnly: true,

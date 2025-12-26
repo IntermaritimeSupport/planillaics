@@ -1,20 +1,30 @@
 // AJUSTE 1: Importar 'hash' de 'bcryptjs'
-import prisma from '@/lib/prisma'
+import prisma from '@/lib/prisma.js'
 import { hash } from 'bcryptjs'
 
+// --- Tipos de Datos de Ejemplo ---
+type EmployeeDeduction = {
+  nombre: string
+  monto: number
+  mensual: boolean // Aplicar mes a mes?
+}
+
 async function main() {
+  console.log('Iniciando script de seeding...')
+
+  // --- 1. CREAR COMPAÑÍAS ---
   const companyIntermaritime = await prisma.company.upsert({
+    where: { ruc: '800100200-1-2025' },
     update: {},
     create: {
       nombre: 'Intermaritime',
       ruc: '800100200-1-2025',
-      direccion: 'C0iudad de Panamá, Edificio TechHub, Piso 5',
+      direccion: 'Ciudad de Panamá, Edificio TechHub, Piso 5',
       telefono: '+507 800-1234',
       email: 'info@intermaritime.com',
       representanteLegal: 'Representante Intermaritime',
       activo: true,
     },
-    where: { ruc: '800100200-1-2025' },
   })
   console.log(`Creada/Actualizada la compañía: ${companyIntermaritime.nombre} (ID: ${companyIntermaritime.id})`)
 

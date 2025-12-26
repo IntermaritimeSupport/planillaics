@@ -3,8 +3,8 @@
 import { Webhook } from 'svix'
 import { headers } from 'next/headers'
 // Ajusta esta ruta a donde tengas tu cliente Prisma (probablemente @/lib/db/db)
-import { db } from '@/lib/db/db' 
 import { clerkClient, WebhookEvent } from '@clerk/nextjs/server'
+import prisma from '@/lib/prisma'
 
 export async function POST(req: Request) {
   // 1. Obtener el secreto del Webhook desde tus variables de entorno (.env.local)
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
 
     try {
       // 4a. Crear el usuario en tu base de datos Prisma
-      await db.user.create({
+      await prisma.user.create({
         data: {
           clerkId: id, //
           email: email_addresses[0].email_address,
@@ -69,7 +69,8 @@ export async function POST(req: Request) {
 
       // 4b. ¡AQUÍ ES DONDE SE GUARDA EL ROL EN CLERK!
       // Sincroniza el rol de tu DB con los metadatos de Clerk
-      await clerkClient.users.updateUserMetadata(id, {
+      const clerk = await clerkClient()
+      await clerk.users.updateUserMetadata(id, {
         publicMetadata: {
           role: defaultRole 
         }

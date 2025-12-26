@@ -1,7 +1,7 @@
 // File: app/api/decimo-entries/route.ts
 import { NextResponse } from 'next/server'
 import type { DecimoTercerMes } from '@/lib/types'
-import { db } from '@/lib/db/db'
+import prisma from '@/lib/prisma'
 
 // GET /api/decimo-entries?companiaId=...&anio=... - Obtener entradas por año
 export async function GET(request: Request) {
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Missing companiaId or anio' }, { status: 400 })
     }
 
-    const entries = await db.decimoTercerMes.findMany({
+    const entries = await prisma.decimoTercerMes.findMany({
       where: { 
           companiaId,
           anio: Number(anio)
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No entries provided' }, { status: 400 })
     }
 
-    const results = await db.$transaction(
+    const results = await prisma.$transaction(
       entries.map(entry => {
         // CORRECCIÓN CLAVE: Desestructuramos para excluir 'id' y la relación 'employee'.
         // El 'id' se excluye porque no debe pasarse a 'create' o 'update'.
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
           fechaCalculo: new Date(dataToSave.fechaCalculo),
         };
 
-        return db.decimoTercerMes.upsert({
+        return prisma.decimoTercerMes.upsert({
           where: { empleadoId_anio: { empleadoId: finalData.empleadoId, anio: finalData.anio } },
           update: finalData,
           create: finalData,
@@ -81,7 +81,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Missing companiaId or anio' }, { status: 400 })
     }
 
-    const deleted = await db.decimoTercerMes.deleteMany({
+    const deleted = await prisma.decimoTercerMes.deleteMany({
       where: {
           companiaId,
           anio: Number(anio)

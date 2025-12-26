@@ -1,4 +1,33 @@
 -- CreateTable
+CREATE TABLE "user" (
+    "id" TEXT NOT NULL,
+    "nombre" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "rol" TEXT NOT NULL,
+    "activo" BOOLEAN NOT NULL DEFAULT true,
+    "hashedPassword" TEXT,
+    "emailVerified" BOOLEAN NOT NULL DEFAULT false,
+    "image" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "clerkId" TEXT,
+
+    CONSTRAINT "user_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Post" (
+    "id" SERIAL NOT NULL,
+    "title" TEXT NOT NULL,
+    "content" TEXT,
+    "published" BOOLEAN NOT NULL DEFAULT false,
+    "authorId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Post_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Company" (
     "id" TEXT NOT NULL,
     "nombre" TEXT NOT NULL,
@@ -11,18 +40,6 @@ CREATE TABLE "Company" (
     "fechaCreacion" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Company_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "User" (
-    "id" TEXT NOT NULL,
-    "nombre" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
-    "rol" TEXT NOT NULL,
-    "companias" TEXT[],
-    "activo" BOOLEAN NOT NULL DEFAULT true,
-
-    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -47,6 +64,41 @@ CREATE TABLE "Employee" (
     "otrasDeduccionesPersonalizadas" JSONB,
 
     CONSTRAINT "Employee_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Account" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "provider" TEXT NOT NULL,
+    "providerAccountId" TEXT NOT NULL,
+    "refresh_token" TEXT,
+    "access_token" TEXT,
+    "expires_at" INTEGER,
+    "token_type" TEXT,
+    "scope" TEXT,
+    "id_token" TEXT,
+    "session_state" TEXT,
+
+    CONSTRAINT "Account_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Session" (
+    "id" TEXT NOT NULL,
+    "sessionToken" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "expires" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "VerificationToken" (
+    "identifier" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "expires" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -148,14 +200,37 @@ CREATE TABLE "SIPEPayment" (
     CONSTRAINT "SIPEPayment_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "_CompanyUsers" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_CompanyUsers_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "user_clerkId_key" ON "user"("clerkId");
+
 -- CreateIndex
 CREATE UNIQUE INDEX "Company_ruc_key" ON "Company"("ruc");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+CREATE UNIQUE INDEX "Employee_companiaId_cedula_key" ON "Employee"("companiaId", "cedula");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Employee_companiaId_cedula_key" ON "Employee"("companiaId", "cedula");
+CREATE UNIQUE INDEX "Account_provider_providerAccountId_key" ON "Account"("provider", "providerAccountId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session"("sessionToken");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "VerificationToken_token_key" ON "VerificationToken"("token");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "VerificationToken_identifier_token_key" ON "VerificationToken"("identifier", "token");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "LegalParameters_companiaId_nombre_fechaVigencia_key" ON "LegalParameters"("companiaId", "nombre", "fechaVigencia");
@@ -169,8 +244,20 @@ CREATE UNIQUE INDEX "DecimoTercerMes_empleadoId_anio_key" ON "DecimoTercerMes"("
 -- CreateIndex
 CREATE UNIQUE INDEX "SIPEPayment_companiaId_periodo_key" ON "SIPEPayment"("companiaId", "periodo");
 
+-- CreateIndex
+CREATE INDEX "_CompanyUsers_B_index" ON "_CompanyUsers"("B");
+
+-- AddForeignKey
+ALTER TABLE "Post" ADD CONSTRAINT "Post_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
 -- AddForeignKey
 ALTER TABLE "Employee" ADD CONSTRAINT "Employee_companiaId_fkey" FOREIGN KEY ("companiaId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "LegalParameters" ADD CONSTRAINT "LegalParameters_companiaId_fkey" FOREIGN KEY ("companiaId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -192,3 +279,9 @@ ALTER TABLE "DecimoTercerMes" ADD CONSTRAINT "DecimoTercerMes_empleadoId_fkey" F
 
 -- AddForeignKey
 ALTER TABLE "SIPEPayment" ADD CONSTRAINT "SIPEPayment_companiaId_fkey" FOREIGN KEY ("companiaId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_CompanyUsers" ADD CONSTRAINT "_CompanyUsers_A_fkey" FOREIGN KEY ("A") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_CompanyUsers" ADD CONSTRAINT "_CompanyUsers_B_fkey" FOREIGN KEY ("B") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;

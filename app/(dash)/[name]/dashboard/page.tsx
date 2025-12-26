@@ -1,12 +1,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import prisma from "@/lib/prisma";
 import { Users, DollarSign, TrendingUp, Calendar } from "lucide-react"
-import { db } from "@/lib/db/db"; 
+import type { ReactNode } from "react"
 
-export default async function DashboardPage() {
-  const firstCompany = await db.company.findFirst();
-  const currentCompanyId = firstCompany?.id ?? "default-company-id"; 
-  const currentMonth = new Date().toISOString().slice(0, 7) 
-  const activeEmployees = await db.employee.count({
+export default async function DashboardPage(): Promise<ReactNode> {
+  const firstCompany =  await prisma.company.findFirst();
+  const currentCompanyId = firstCompany?.id ?? "default-company-id";
+  const currentMonth = new Date().toISOString().slice(0, 7)
+  const activeEmployees = await prisma.employee.count({
     where: {
       companiaId: currentCompanyId,
       estado: "activo"
@@ -14,11 +15,11 @@ export default async function DashboardPage() {
   })
 
   // 2. Data de Planilla del Mes
-  const currentMonthPayroll = await db.payrollEntry.findMany({
+  const currentMonthPayroll = await prisma.payrollEntry.findMany({
     where: {
       companiaId: currentCompanyId,
       periodo: {
-        startsWith: currentMonth 
+        startsWith: currentMonth
       }
     },
     select: {
@@ -30,10 +31,8 @@ export default async function DashboardPage() {
   const totalGross = currentMonthPayroll.reduce((sum, entry) => sum + (entry.salarioBruto ?? 0), 0);
   const currentMonthName = new Date().toLocaleDateString("es-PA", { month: "long", year: "numeric" });
 
-
-  return (
-    <>
-    <div className="p-6 md:p-10"> 
+ return (
+    <div className="p-6 md:p-10">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
         <p className="text-muted-foreground">Resumen general del sistema de planilla</p>
@@ -43,7 +42,7 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Empleados Activos</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users size={16} className="text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeEmployees || 0}</div>
@@ -54,7 +53,7 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Planilla del Mes</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <DollarSign size={16} className="text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -67,7 +66,7 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Salario Bruto</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <TrendingUp size={16} className="text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -80,7 +79,7 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Período Actual</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Calendar size={16} className="text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -116,8 +115,8 @@ export default async function DashboardPage() {
               </div>
               <div className="pt-4 border-t border-border">
                 <p className="text-sm text-muted-foreground">
-                  Comience agregando empleados desde el menú **Empleados** o calcule la planilla del mes
-                  actual en **Calcular Planilla**.
+                  Comience agregando empleados desde el menú <strong>Empleados</strong> o calcule la planilla del mes
+                  actual en <strong>Calcular Planilla</strong>.
                 </p>
               </div>
             </div>
@@ -125,6 +124,5 @@ export default async function DashboardPage() {
         </Card>
       </div>
     </div>
-    </>
   )
 }

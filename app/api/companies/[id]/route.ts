@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db/db';
 import { auth } from '@clerk/nextjs/server';
+import prisma from '@/lib/prisma';
 
 // GET (Obtener una compañía específica - sin cambios)
 export async function GET(
@@ -14,7 +14,7 @@ export async function GET(
     }
 
     const companyId = params.id;
-    const company = await db.company.findUnique({
+    const company = await prisma.company.findUnique({
       where: { id: companyId },
       // Opcional: include: { users: true } si necesitas ver los usuarios asignados
     });
@@ -46,16 +46,24 @@ export async function PATCH(
     }
 
     // Verificar permisos (ej: solo admin/super_admin puede editar)
-    const user = await db.user.findUnique({ where: { clerkId } });
+    const user = await prisma.user.findUnique({ where: { clerkId } });
     if (!user || (user.rol !== 'admin' && user.rol !== 'super_admin')) {
         return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
     }
 
     const companyIdToUpdate = params.id;
-    const data = await request.json();
+    const data = await request.json() as {
+      nombre?: string;
+      ruc?: string;
+      direccion?: string;
+      telefono?: string;
+      email?: string;
+      representanteLegal?: string;
+      activo?: boolean;
+    };
     const { nombre, ruc, direccion, telefono, email, representanteLegal, activo } = data;
 
-    const updatedCompany = await db.company.update({
+    const updatedCompany = await prisma.company.update({
       where: { id: companyIdToUpdate },
       data: {
         nombre,
@@ -91,7 +99,7 @@ export async function DELETE(
     }
 
     // Verificar permisos (ej: solo super_admin puede eliminar)
-    const requestingUser = await db.user.findUnique({ where: { clerkId } });
+    const requestingUser = await prisma.user.findUnique({ where: { clerkId } });
     if (!requestingUser || requestingUser.rol !== 'super_admin') {
        return NextResponse.json({ error: 'Forbidden: Only super admins can delete companies.' }, { status: 403 });
     }
@@ -102,7 +110,7 @@ export async function DELETE(
     // const data = await request.json(); // <-- NO LEER BODY AQUÍ
 
     // Verificar si la compañía existe antes de intentar borrar
-    const company = await db.company.findUnique({
+    const company = await prisma.company.findUnique({
       where: { id: companyIdToDelete },
     });
     if (!company) {
@@ -112,7 +120,7 @@ export async function DELETE(
     // Opcional: Añadir lógica para prevenir borrar la única compañía o una compañía activa, etc.
 
     // Realizar la eliminación usando el ID de los parámetros
-    await db.company.delete({
+    await prisma.company.delete({
       where: { id: companyIdToDelete },
     });
 
