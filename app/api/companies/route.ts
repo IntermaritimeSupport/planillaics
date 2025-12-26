@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import prisma from '@/lib/prisma.js';
+import prisma from '@/lib/prisma';
 
 // POST (Crear Compañía) - Lógica de permisos ya implementada
 export async function POST(request: Request) {
