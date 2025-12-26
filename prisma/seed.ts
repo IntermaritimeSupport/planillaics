@@ -4,6 +4,7 @@ import { hash } from 'bcryptjs'
 
 async function main() {
   const companyIntermaritime = await prisma.company.upsert({
+    where: { ruc: '800100200-1-2025' },
     update: {},
     create: {
       nombre: 'Intermaritime',
@@ -14,7 +15,6 @@ async function main() {
       representanteLegal: 'Representante Intermaritime',
       activo: true,
     },
-    where: { ruc: '800100200-1-2025' },
   })
   console.log(`Creada/Actualizada la compañía: ${companyIntermaritime.nombre} (ID: ${companyIntermaritime.id})`)
 
@@ -103,7 +103,7 @@ async function main() {
   console.log(`Creado/Actualizado el usuario: ${userSuperAdmin.email} con rol ${userSuperAdmin.rol}`)
 
   // --- 3. CREAR PARÁMETROS LEGALES Y TRAMOS ISR (Mantenido para Intermaritime) ---
-  
+
   console.log(`Configurando parámetros para ${companyIntermaritime.nombre}...`)
   const legalParams = [
     { nombre: 'CSS_EMPLEADO', tipo: 'DEDUCCION_FIJA', porcentaje: 9.75, fechaVigencia: new Date('2025-01-01') },
@@ -160,7 +160,7 @@ async function main() {
   ]
 
   await Promise.all(
-    employeesIntermaritime.map(emp => 
+    employeesIntermaritime.map(emp =>
       prisma.employee.upsert({
         where: { companiaId_cedula: { companiaId: companyIntermaritime.id, cedula: emp.cedula } },
         update: { ...emp },
@@ -189,7 +189,7 @@ async function main() {
   ]
 
   await Promise.all(
-    employeesPMTS.map(emp => 
+    employeesPMTS.map(emp =>
       prisma.employee.upsert({
         where: { companiaId_cedula: { companiaId: companyPMTS.id, cedula: emp.cedula } },
         update: { ...emp },
