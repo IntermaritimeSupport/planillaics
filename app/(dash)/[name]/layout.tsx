@@ -26,6 +26,7 @@ export default async function Layout({ children, params }: LayoutProps) {
       </div>
     );
   }
+  
   const { initialUser, initialCompanies, currentCompanyId } = result;
 
   return (
