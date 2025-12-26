@@ -4,15 +4,25 @@ import { promisify } from 'util'
 
 const execAsync = promisify(exec)
 
+// Hacer esta ruta pública (sin protección de Clerk)
+export const runtime = 'nodejs'
+
 export async function POST(req: Request) {
   try {
-    // Validar token de seguridad
+    // Validar token de seguridad desde header
     const authHeader = req.headers.get('authorization')
-    const expectedToken = `Bearer ${process.env.INIT_SECRET_KEY}`
+    const secretKey = process.env.INIT_SECRET_KEY
     
-    if (authHeader !== expectedToken) {
+    if (!secretKey) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'INIT_SECRET_KEY no configurado en variables de entorno' },
+        { status: 500 }
+      )
+    }
+    
+    if (authHeader !== `Bearer ${secretKey}`) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Token inválido' },
         { status: 401 }
       )
     }
