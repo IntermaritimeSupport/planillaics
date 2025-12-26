@@ -16,9 +16,9 @@ interface LayoutProps {
 }
 export default async function Layout({ children, params }: LayoutProps) {
 
-  const result = await getLayoutData(params.name);
+  const result = await getLayoutData(params?.name);
 
-  if (result.error === 'no-access' || !result.initialUser || !result.initialCompanies) {
+  if (result.error === 'no-access' || !result?.initialUser || !result.initialCompanies) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <NoAccessPage />
