@@ -1,4 +1,3 @@
-// AJUSTE 1: Importar 'hash' de 'bcryptjs'
 import prisma from '@/lib/prisma'
 import { hash } from 'bcryptjs'
 
@@ -33,7 +32,6 @@ async function main() {
   })
   console.log(`Creada/Actualizada la compañía: ${companyPMTS.nombre} (ID: ${companyPMTS.id})`)
 
-
   // --- 2. CREAR USUARIOS CON CONTRASEÑAS HASHEADAS Y ASIGNAR COMPAÑÍAS ---
 
   const passwordModerator = await hash('moderator123', 12)
@@ -42,7 +40,7 @@ async function main() {
 
   // Usuario Moderator (acceso solo a PMTS)
   const userModerator = await prisma.user.upsert({
-    where: { email: 'moderator@example.com' },
+    where: { email: 'contador@intermaritime.org' },
     update: { hashedPassword: passwordModerator },
     create: {
       nombre: 'Contador',
@@ -59,7 +57,7 @@ async function main() {
 
   // Usuario Admin (acceso solo a Intermaritime)
   const userAdmin = await prisma.user.upsert({
-    where: { email: 'admin@example.com' },
+    where: { email: 'alex@intermaritime.org' },
     update: { hashedPassword: passwordAdmin },
     create: {
       nombre: 'Alexander Prosper',
@@ -78,13 +76,13 @@ async function main() {
   const userSuperAdmin = await prisma.user.upsert({
     where: { email: 'david@intermaritime.org' },
     update: {
-        hashedPassword: passwordSuperAdmin,
-        companias: {
-            set: [
-                { id: companyIntermaritime.id },
-                { id: companyPMTS.id }
-            ]
-        }
+      hashedPassword: passwordSuperAdmin,
+      companias: {
+        set: [
+          { id: companyIntermaritime.id },
+          { id: companyPMTS.id }
+        ]
+      }
     },
     create: {
       nombre: 'Carlos Sanchez',
@@ -95,8 +93,8 @@ async function main() {
       hashedPassword: passwordSuperAdmin,
       companias: {
         connect: [
-            { id: companyIntermaritime.id },
-            { id: companyPMTS.id }
+          { id: companyIntermaritime.id },
+          { id: companyPMTS.id }
         ],
       },
     },
@@ -104,7 +102,6 @@ async function main() {
   console.log(`Creado/Actualizado el usuario: ${userSuperAdmin.email} con rol ${userSuperAdmin.rol}`)
 
   // --- 3. CREAR PARÁMETROS LEGALES Y TRAMOS ISR (Mantenido para Intermaritime) ---
-  // (Se mantiene la lógica anterior, puedes duplicarla para PMTS si es necesario)
   
   console.log(`Configurando parámetros para ${companyIntermaritime.nombre}...`)
   const legalParams = [
@@ -150,7 +147,6 @@ async function main() {
   })
   console.log(`Recreados tramos de ISR para ${companyIntermaritime.nombre}.`)
 
-  
   // --- 4. CREAR 5 EMPLEADOS PARA CADA COMPAÑÍA ---
 
   console.log(`Creando empleados para ${companyIntermaritime.nombre}...`)
@@ -160,7 +156,7 @@ async function main() {
     { cedula: '8-800-803', nombre: 'Carla', apellido: 'Suarez', salarioBase: 3000.00, cargo: 'Gerente de Proyectos' },
     { cedula: '8-800-804', nombre: 'David', apellido: 'Ruiz', salarioBase: 1500.00, cargo: 'Asistente Contable' },
     { cedula: '8-800-805', nombre: 'Elena', apellido: 'Morales', salarioBase: 2500.00, cargo: 'Desarrolladora Sr.' },
-  ];
+  ]
 
   await Promise.all(
     employeesIntermaritime.map(emp => 
@@ -174,15 +170,14 @@ async function main() {
           departamento: 'Operaciones',
           estado: 'activo',
           email: `${emp.nombre.toLowerCase()}.${emp.apellido.toLowerCase()}@intermaritime.com`,
-          mesesDeduccionesBancarias: [], // Inicializar campos array vacíos
-          mesesPrestamos: [], // Inicializar campos array vacíos
+          mesesDeduccionesBancarias: [],
+          mesesPrestamos: [],
         }
       })
     )
-  );
+  )
   console.log(`Creados/Actualizados ${employeesIntermaritime.length} empleados para ${companyIntermaritime.nombre}.`)
 
-  
   console.log(`Creando empleados para ${companyPMTS.nombre}...`)
   const employeesPMTS = [
     { cedula: '9-900-901', nombre: 'Pedro', apellido: 'Martinez', salarioBase: 2100.00, cargo: 'Supervisor' },
@@ -190,7 +185,7 @@ async function main() {
     { cedula: '9-900-903', nombre: 'Jorge', apellido: 'Campos', salarioBase: 2800.00, cargo: 'Logística' },
     { cedula: '9-900-904', nombre: 'Maria', apellido: 'Delgado', salarioBase: 1600.00, cargo: 'Recepcionista' },
     { cedula: '9-900-905', nombre: 'Ricardo', apellido: 'Forte', salarioBase: 3200.00, cargo: 'Gerente de Flota' },
-  ];
+  ]
 
   await Promise.all(
     employeesPMTS.map(emp => 
@@ -204,14 +199,13 @@ async function main() {
           departamento: 'Administración',
           estado: 'activo',
           email: `${emp.nombre.toLowerCase()}.${emp.apellido.toLowerCase()}@pmts.com`,
-          mesesDeduccionesBancarias: [], // Inicializar campos array vacíos
-          mesesPrestamos: [], // Inicializar campos array vacíos
+          mesesDeduccionesBancarias: [],
+          mesesPrestamos: [],
         }
       })
     )
-  );
+  )
   console.log(`Creados/Actualizados ${employeesPMTS.length} empleados para ${companyPMTS.nombre}.`)
-
 
   console.log('--- Seeding completado exitosamente! ---')
 }
